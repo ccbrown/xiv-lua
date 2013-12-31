@@ -16,8 +16,8 @@ SRCDIR = src
 OBJDIR = obj
 
 SRCS := $(shell find $(SRCDIR) -name '*.c') $(shell find $(SRCDIR) -name '*.cpp')
-OBJS := $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(patsubst $(SRCDIR)/%.m,$(OBJDIR)/%.o,$(SRCS))))
-DEPS := $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.d,$(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.d,$(patsubst $(SRCDIR)/%.m,$(OBJDIR)/%.d,$(SRCS))))
+OBJS := $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SRCS)))
+DEPS := $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.d,$(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.d,$(SRCS)))
 
 NODEPS := clean
 
@@ -34,10 +34,6 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@ -MD -MT '$@' -MF '$(patsubst $(OBJDIR)/%.o,$(OBJDIR)/%.d,$@)'
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
-	@mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MT '$@' -MF '$(patsubst $(OBJDIR)/%.o,$(OBJDIR)/%.d,$@)'
-
-$(OBJDIR)/%.o: $(SRCDIR)/%.m
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MT '$@' -MF '$(patsubst $(OBJDIR)/%.o,$(OBJDIR)/%.d,$@)'
 
