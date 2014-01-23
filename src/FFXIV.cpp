@@ -84,7 +84,7 @@ static bool FFXIVReadLog(HANDLE proc, BYTE* baseAddr) {
 	DWORD address;
 
 	if (false
-	  || !ReadProcessMemory(proc, baseAddr + 0x0106db98, &address, 4, nullptr)
+	  || !ReadProcessMemory(proc, baseAddr + 0x0106eb98, &address, 4, nullptr)
 	  || !ReadProcessMemory(proc, (BYTE*)address + 0x18, &address, 4, nullptr)
 	  || !ReadProcessMemory(proc, (BYTE*)address + 0x1f0, &logContainer, sizeof(logContainer), nullptr)
 	) {
@@ -225,8 +225,8 @@ static void PollTimerFire(lua_State* L) {
 	}
 
 	if (false
-		|| !FFXIVUpdateUnit(gProcess, gBaseAddr, &gTarget, 0x01071770) 
-		|| !FFXIVUpdateUnit(gProcess, gBaseAddr, &gFocus,  0x010717b0)
+		|| !FFXIVUpdateUnit(gProcess, gBaseAddr, &gTarget, 0x01072770) 
+		|| !FFXIVUpdateUnit(gProcess, gBaseAddr, &gFocus,  0x010727b0)
 		|| !FFXIVReadLog(gProcess, gBaseAddr)
 	) {
 		DisconnectProcess();
