@@ -38,14 +38,14 @@ static bool FFXIVUpdateUnit(HANDLE proc, BYTE* baseAddr, FFXIVUnit* unit, DWORD 
 	if (!ReadProcessMemory(proc, baseAddr + pointer, &unitAddr, sizeof(unitAddr), nullptr)) {
 		return false;
 	}
-
+	
 	if (false
-	 || !ReadProcessMemory(proc, (BYTE*)unitAddr + 0x0030, &unit->name, sizeof(unit->name), nullptr)
-	 || !ReadProcessMemory(proc, (BYTE*)unitAddr + 0x16A0, &unit->currentHP, 4, nullptr)
-	 || !ReadProcessMemory(proc, (BYTE*)unitAddr + 0x16A4, &unit->maxHP, 4, nullptr)
-	 || !ReadProcessMemory(proc, (BYTE*)unitAddr + 0x16A8, &unit->currentMP, 4, nullptr)
-	 || !ReadProcessMemory(proc, (BYTE*)unitAddr + 0x16AC, &unit->maxMP, 4, nullptr)
-	 || !ReadProcessMemory(proc, (BYTE*)unitAddr + 0x16B0, &unit->currentTP, 4, nullptr)
+	 || !ReadProcessMemory(proc, (BYTE*)unitAddr + 0x0040, &unit->name, sizeof(unit->name), nullptr)
+	 || !ReadProcessMemory(proc, (BYTE*)unitAddr + 0x1838, &unit->currentHP, 4, nullptr)
+	 || !ReadProcessMemory(proc, (BYTE*)unitAddr + 0x183C, &unit->maxHP, 4, nullptr)
+	 || !ReadProcessMemory(proc, (BYTE*)unitAddr + 0x1840, &unit->currentMP, 4, nullptr)
+	 || !ReadProcessMemory(proc, (BYTE*)unitAddr + 0x1844, &unit->maxMP, 4, nullptr)
+	 || !ReadProcessMemory(proc, (BYTE*)unitAddr + 0x1848, &unit->currentTP, 4, nullptr)
 	) {
 		return true;
 	}
@@ -84,9 +84,9 @@ static bool FFXIVReadLog(HANDLE proc, BYTE* baseAddr) {
 	DWORD address;
 
 	if (false
-	  || !ReadProcessMemory(proc, baseAddr + 0x0106eb98, &address, 4, nullptr)
+	  || !ReadProcessMemory(proc, baseAddr + 0x00e38420, &address, 4, nullptr)
 	  || !ReadProcessMemory(proc, (BYTE*)address + 0x18, &address, 4, nullptr)
-	  || !ReadProcessMemory(proc, (BYTE*)address + 0x1f0, &logContainer, sizeof(logContainer), nullptr)
+	  || !ReadProcessMemory(proc, (BYTE*)address + 0x1ec, &logContainer, sizeof(logContainer), nullptr)
 	) {
 		return false;
 	}
@@ -214,6 +214,8 @@ static bool ConnectProcess() {
 		return false;
 	}
 	
+	printf("connected to process (base = %p)\n", baseAddr);
+
 	gProcess = proc;
 	gBaseAddr = baseAddr;
 	return true;
@@ -225,8 +227,8 @@ static void PollTimerFire(lua_State* L) {
 	}
 
 	if (false
-		|| !FFXIVUpdateUnit(gProcess, gBaseAddr, &gTarget, 0x01072770) 
-		|| !FFXIVUpdateUnit(gProcess, gBaseAddr, &gFocus,  0x010727b0)
+		|| !FFXIVUpdateUnit(gProcess, gBaseAddr, &gTarget, 0x00e3c048) 
+		|| !FFXIVUpdateUnit(gProcess, gBaseAddr, &gFocus,  0x00e3c080)
 		|| !FFXIVReadLog(gProcess, gBaseAddr)
 	) {
 		DisconnectProcess();
