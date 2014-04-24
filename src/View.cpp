@@ -120,6 +120,18 @@ int View::setBackgroundColor(lua_State* L) {
 	return 0;
 }
 
+int View::setOpacity(lua_State* L) {
+	int n = lua_gettop(L) - 1;
+
+	if (n == 1) {
+		impl()->setWindowOpacity(luaL_checknumber(L, 2));
+	} else {
+		return luaL_error(L, "invalid arguments");
+	}
+
+	return 0;
+}
+
 int View::setScript(lua_State* L) {
 	int n = lua_gettop(L) - 1;
 
@@ -228,6 +240,7 @@ const Luna<View>::RegType View::Register[] = {
 	{ "setMovable", &View::setMovable },
 	{ "setClickable", &View::setClickable },
 	{ "setBackgroundColor", &View::setBackgroundColor },
+	{ "setOpacity", &View::setOpacity },
 	{ "setScript", &View::setScript },
 	{ 0 }
 };

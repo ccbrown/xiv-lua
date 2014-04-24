@@ -14,8 +14,28 @@ TextView::~TextView() {
 
 int TextView::setText(lua_State* L) {
 	int n = lua_gettop(L) - 1;
+
 	if (n == 1) {
 		textImpl()->setText(luaL_checkstring(L, 2));
+	} else {
+		return luaL_error(L, "invalid arguments");
+	}
+
+	return 0;
+}
+
+int TextView::setFont(lua_State* L) {
+	int n = lua_gettop(L) - 1;
+
+	if (n >= 2 && n <= 3) {
+		int weight = QFont::Normal;
+
+		if (n >= 3 && !strcmp(luaL_checkstring(L, 4), "bold")) {
+			weight = QFont::Bold;
+		}
+		
+		QFont font(luaL_checkstring(L, 2), luaL_checknumber(L, 3), weight);
+		textImpl()->setFont(font);
 	} else {
 		return luaL_error(L, "invalid arguments");
 	}
@@ -90,6 +110,7 @@ const Luna<TextView>::RegType TextView::Register[] = {
 	{ "show", &TextView::show },
 	{ "hide", &TextView::hide },
 	{ "setText", &TextView::setText },
+	{ "setFont", &TextView::setFont },
 	{ "setBackgroundColor", &TextView::setBackgroundColor },
 	{ "setColor", &TextView::setColor },
 	{ "setAnchor1", &TextView::setAnchor1 },

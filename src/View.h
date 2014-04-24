@@ -36,6 +36,7 @@ class View {
 		int setMovable(lua_State* L);
 		int setClickable(lua_State* L);
 		int setBackgroundColor(lua_State* L);
+		int setOpacity(lua_State* L);
 		int setScript(lua_State* L);
 
 		int setAnchor(lua_State* L, Anchor* anchor);

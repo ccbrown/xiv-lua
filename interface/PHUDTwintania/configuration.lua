@@ -4,6 +4,8 @@ local lastScourgeEntry = 0
 local lastLiquidHell = 0
 local lastDreadknightEntry = 0
 
+-- TODO: port to IBM
+
 PHUDElements()[PHUDUUID4()] = {
 	type = "timer",
 	triggerEvents = {
@@ -24,11 +26,6 @@ PHUDElements()[PHUDUUID4()] = {
 					return {label = "Divebomb", duration = (divebombs == 3 and 49 or 7), color = {0.0, 0.4, 0.0, 0.6}}
 				elseif divebombs == 6 then
 					return {label = "Aetheric Profusion", duration = 70, color = {0.2, 0.2, 1.0, 0.6}}
-				end
-			elseif text:find("Twintania uses Aetheric Profusion") then
-				profusions = profusions + 1
-				if profusions == 1 then
-					return {label = "Aetheric Profusion (Enrage)", duration = 295, color = {0.2, 0.2, 1.0, 0.6}}
 				end
 			elseif text:find("Twintania readies Death Sentence") then
 				return {label = "Death Sentence CD", duration = 35, color = {0.7, 0.0, 0.3, 0.6}}

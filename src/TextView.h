@@ -8,6 +8,7 @@ class TextView : public View {
 		virtual ~TextView();
 
 		int setText(lua_State* L);
+		int setFont(lua_State* L);
 		int setColor(lua_State* L);
 		int setHorizontalAlignment(lua_State* L);
 		

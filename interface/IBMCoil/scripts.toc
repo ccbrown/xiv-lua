@@ -1,0 +1,4 @@
+#dependency IchibanBossMods
+avatar.lua
+melusine.lua
+nael.lua

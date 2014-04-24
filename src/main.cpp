@@ -4,6 +4,9 @@
 
 #include <fstream>
 #include <string>
+#include <unordered_set>
+
+#include <dirent.h>
 
 #include <windows.h>
 
@@ -38,6 +41,24 @@ bool CheckPrivileges() {
 	return true;
 }
 
+void AttemptTOCLoad(lua_State* L, const char* directory, std::unordered_set<std::string>* loaded) {
+	if (!loaded->insert(directory).second) { return; }
+
+	std::ifstream toc(std::string(directory) + "/scripts.toc");
+	for (std::string line; std::getline(toc, line);) {
+		if (line.empty()) { continue; }
+
+		if (line.find("#dependency ") == 0) {
+			AttemptTOCLoad(L, (std::string("interface/") + line.substr(12)).c_str(), loaded);
+			continue;
+		}
+		
+		auto file = std::string(directory) + '/' + line;
+		printf("running %s\n", file.c_str());
+		LuaRunFile(L, file.c_str());
+	}
+}
+
 int main(int argc, char* argv[]) {
 	if (!CheckPrivileges()) {
 		MessageBox(nullptr, "This program must be run as administrator.", "Error", MB_ICONERROR | MB_OK);
@@ -50,13 +71,17 @@ int main(int argc, char* argv[]) {
 	PlatformInit(lua);
 	FFXIVInit(lua);
 	
-	std::ifstream toc("interface/scripts.toc");
-	for (std::string line; std::getline(toc, line);) {
-		if (!line.empty()) {
-			auto file = std::string("interface/") + line;
-			printf("running %s\n", file.c_str());
-			LuaRunFile(lua, file.c_str());
+	std::unordered_set<std::string> loaded;
+	
+	AttemptTOCLoad(lua, "interface", &loaded);
+	
+	if (auto dir = opendir("interface")) {
+		while (auto ent = readdir(dir)) {
+			if (*ent->d_name != '.') {
+				AttemptTOCLoad(lua, (std::string("interface/") + ent->d_name).c_str(), &loaded);
+			}
 		}
+		closedir(dir);
 	}
 
     int ret = app.exec();
