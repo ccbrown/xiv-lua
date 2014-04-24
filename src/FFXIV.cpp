@@ -87,7 +87,7 @@ static bool FFXIVUpdateUnitFromPointer(HANDLE proc, BYTE* pointer, FFXIVUnit* un
 
 static bool FFXIVUpdateCombatState(HANDLE proc, BYTE* baseAddr) {
 	DWORD addr;
-	if (!ReadProcessMemory(proc, baseAddr + 0x00f79210, &addr, sizeof(addr), nullptr)) {
+	if (!ReadProcessMemory(proc, baseAddr + 0x00f7c250, &addr, sizeof(addr), nullptr)) {
 		return false;
 	}
 
@@ -130,7 +130,7 @@ static bool FFXIVReadLog(HANDLE proc, BYTE* baseAddr) {
 	DWORD address;
 
 	if (false
-	  || !ReadProcessMemory(proc, baseAddr + 0x00e38420, &address, 4, nullptr)
+	  || !ReadProcessMemory(proc, baseAddr + 0x00e3b420, &address, 4, nullptr)
 	  || !ReadProcessMemory(proc, (BYTE*)address + 0x18, &address, 4, nullptr)
 	  || !ReadProcessMemory(proc, (BYTE*)address + 0x1ec, &logContainer, sizeof(logContainer), nullptr)
 	) {
@@ -273,9 +273,9 @@ static void PollTimerFire(lua_State* L) {
 	}
 
 	if (false
-		|| !FFXIVUpdateUnitFromPointer(gProcess, gBaseAddr + 0x00e3c048, &gTarget) 
-		|| !FFXIVUpdateUnitFromPointer(gProcess, gBaseAddr + 0x00e3d080, &gPlayer) 
-		|| !FFXIVUpdateUnitFromPointer(gProcess, gBaseAddr + 0x00e3c080, &gFocus)
+		|| !FFXIVUpdateUnitFromPointer(gProcess, gBaseAddr + 0x00e3f048, &gTarget) 
+		|| !FFXIVUpdateUnitFromPointer(gProcess, gBaseAddr + 0x00e40080, &gPlayer) 
+		|| !FFXIVUpdateUnitFromPointer(gProcess, gBaseAddr + 0x00e3f080, &gFocus)
 		|| !FFXIVUpdateCombatState(gProcess, gBaseAddr)
 		|| !FFXIVReadLog(gProcess, gBaseAddr)
 	) {
@@ -354,8 +354,8 @@ static int FFXIVSearchEntities(lua_State* L) {
 	DWORD entities[256]; // first element is actually the entity count
 
 	if (false
-		|| !ReadProcessMemory(gProcess, gBaseAddr + 0xe3d07c, &entityCount, sizeof(entityCount), nullptr)
-		|| !ReadProcessMemory(gProcess, gBaseAddr + 0xe3d07c, &entities, std::min<size_t>(sizeof(entities), 4 + entityCount * 4), nullptr)
+		|| !ReadProcessMemory(gProcess, gBaseAddr + 0xe4007c, &entityCount, sizeof(entityCount), nullptr)
+		|| !ReadProcessMemory(gProcess, gBaseAddr + 0xe4007c, &entities, std::min<size_t>(sizeof(entities), 4 + entityCount * 4), nullptr)
 		|| entityCount != entities[0]
 	) {
 		lua_pushnumber(L, 0);

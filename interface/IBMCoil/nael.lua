@@ -133,6 +133,9 @@ addFavorRotation(3)
 phases[4]:addEventHandler("LOG_ENTRY", function(text)
 	if text:find("You suffer the effect of Thunderstruck") then
 		IBMAlert("Thunderstruck on YOU!")
+		phases[4]:addTimer("Thunderstruck on YOU", 5, {0.7, 0.1, 0.4, 0.3})
+	elseif text:find("suffers the effect of Thunderstruck") then
+		phases[4]:addTimer("Thunderstruck on "..text:match("(%a+) %a+ suffers"), 5, {0.7, 0.1, 0.4, 0.3})
 	end
 end)
 
