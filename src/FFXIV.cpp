@@ -20,6 +20,7 @@ struct FFXIVUnit {
 	uint32_t maxMP = 0;
 	uint32_t currentTP = 0;
 	uint32_t target = 0;
+	float position[3];
 };
 
 static FFXIVUnit gPlayer, gTarget, gFocus, gSearch, gSearchTarget;
@@ -45,13 +46,14 @@ static bool FFXIVUpdateUnit(HANDLE proc, BYTE* address, FFXIVUnit* unit) {
 
 	if (false
 	 || !ReadProcessMemory(proc, address + 0x0030, &unit->name, sizeof(unit->name), nullptr)
-	 || !ReadProcessMemory(proc, address + 0x0074, &unit->id, 4, nullptr)
-	 || !ReadProcessMemory(proc, address + 0x1838, &unit->currentHP, 4, nullptr)
-	 || !ReadProcessMemory(proc, address + 0x183C, &unit->maxHP, 4, nullptr)
-	 || !ReadProcessMemory(proc, address + 0x1840, &unit->currentMP, 4, nullptr)
-	 || !ReadProcessMemory(proc, address + 0x1844, &unit->maxMP, 4, nullptr)
-	 || !ReadProcessMemory(proc, address + 0x1848, &unit->currentTP, 4, nullptr)
-	 || !ReadProcessMemory(proc, address + 0x01B0, &unit->target, 4, nullptr)
+	 || !ReadProcessMemory(proc, address + 0x0074, &unit->id, sizeof(unit->id), nullptr)
+	 || !ReadProcessMemory(proc, address + 0x1838, &unit->currentHP, sizeof(unit->currentHP), nullptr)
+	 || !ReadProcessMemory(proc, address + 0x183C, &unit->maxHP, sizeof(unit->maxHP), nullptr)
+	 || !ReadProcessMemory(proc, address + 0x1840, &unit->currentMP, sizeof(unit->currentMP), nullptr)
+	 || !ReadProcessMemory(proc, address + 0x1844, &unit->maxMP, sizeof(unit->maxMP), nullptr)
+	 || !ReadProcessMemory(proc, address + 0x1848, &unit->currentTP, sizeof(unit->currentTP), nullptr)
+	 || !ReadProcessMemory(proc, address + 0x01B0, &unit->target, sizeof(unit->target), nullptr)
+	 || !ReadProcessMemory(proc, address + 0x00A0, &unit->position, sizeof(unit->position), nullptr)
 	) {
 		return false;
 	}
@@ -322,6 +324,22 @@ static int FFXIVUnitVitals(lua_State* L) {
 	return 5;
 }
 
+static int FFXIVUnitPosition(lua_State* L) {
+	RESOLVE_UNIT_ARG(unit);
+	
+	if (unit->exists) {
+		lua_pushnumber(L, unit->position[0]);
+		lua_pushnumber(L, unit->position[1]);
+		lua_pushnumber(L, unit->position[2]);
+	} else {
+		lua_pushnumber(L, 0);
+		lua_pushnumber(L, 0);
+		lua_pushnumber(L, 0);
+	}
+	
+	return 3;
+}
+
 static int FFXIVPlayerIsInCombat(lua_State* L) {
 	int n = lua_gettop(L);
 	
@@ -406,6 +424,9 @@ void FFXIVInit(lua_State* L) {
 
 	lua_pushcfunction(L, &FFXIVUnitVitals);
 	lua_setglobal(L, "UnitVitals");
+
+	lua_pushcfunction(L, &FFXIVUnitPosition);
+	lua_setglobal(L, "UnitPosition");
 
 	lua_pushcfunction(L, &FFXIVPlayerIsInCombat);
 	lua_setglobal(L, "PlayerIsInCombat");
