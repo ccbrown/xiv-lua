@@ -16,7 +16,7 @@ textView:show()
 
 local eventHandler = function(event, arg1)
 	if event == "LOG_ENTRY" and arg1:sub(9, 12) == "0038" then
-		local target = arg1:match("!track (%a+ %a+)")
+		local target = arg1:match("!track (%a+ %a+)") or arg1:match("!track (%a+)")
 		if target then
 			targetName = target
 			window:show()
