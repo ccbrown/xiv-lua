@@ -42,7 +42,7 @@ addTowerSet("Mines / 2 x Damage", true)
 
 phases[1]:addEventHandler("LOG_ENTRY", function(text)
 	if text:find("suffer the effect of Languishing") or text:find("suffers the effect of Languishing") then
-		if towerTimer1 and towerTimer1.instance and towerTimer1.instance.duration == 60 then
+		if towerTimer1 and towerTimer1.instance and towerTimer1.instance.duration >= 45 then
 			towerTimer1.instance.duration = towerTimer1.instance.duration - 15
 		elseif towerTimer2 and towerTimer2.instance then
 			towerTimer2.instance.duration = towerTimer2.instance.duration - 15
