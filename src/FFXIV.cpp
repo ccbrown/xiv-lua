@@ -18,12 +18,11 @@ struct FFXIVUnit {
 	uint32_t maxHP = 0;
 	uint32_t currentMP = 0;
 	uint32_t maxMP = 0;
-	uint32_t currentTP = 0;
-	uint32_t target = 0;
+	uint16_t currentTP = 0;
 	float position[3];
 };
 
-static FFXIVUnit gPlayer, gTarget, gFocus, gSearch, gSearchTarget;
+static FFXIVUnit gPlayer, gTarget, gFocus, gSearch;
 static bool gIsInCombat = false;
 
 static FFXIVUnit* FFXIVUnitForIdentifier(const char* identifier) {
@@ -35,8 +34,6 @@ static FFXIVUnit* FFXIVUnitForIdentifier(const char* identifier) {
 		return &gFocus;
 	} else if (!strcmp(identifier, "search")) {
 		return &gSearch;
-	} else if (!strcmp(identifier, "searchtarget")) {
-		return &gSearchTarget;
 	}
 	return nullptr;
 }
@@ -47,12 +44,11 @@ static bool FFXIVUpdateUnit(HANDLE proc, BYTE* address, FFXIVUnit* unit) {
 	if (false
 	 || !ReadProcessMemory(proc, address + 0x0030, &unit->name, sizeof(unit->name), nullptr)
 	 || !ReadProcessMemory(proc, address + 0x0074, &unit->id, sizeof(unit->id), nullptr)
-	 || !ReadProcessMemory(proc, address + 0x1838, &unit->currentHP, sizeof(unit->currentHP), nullptr)
-	 || !ReadProcessMemory(proc, address + 0x183C, &unit->maxHP, sizeof(unit->maxHP), nullptr)
-	 || !ReadProcessMemory(proc, address + 0x1840, &unit->currentMP, sizeof(unit->currentMP), nullptr)
-	 || !ReadProcessMemory(proc, address + 0x1844, &unit->maxMP, sizeof(unit->maxMP), nullptr)
-	 || !ReadProcessMemory(proc, address + 0x1848, &unit->currentTP, sizeof(unit->currentTP), nullptr)
-	 || !ReadProcessMemory(proc, address + 0x01B0, &unit->target, sizeof(unit->target), nullptr)
+	 || !ReadProcessMemory(proc, address + 0x17C8, &unit->currentHP, sizeof(unit->currentHP), nullptr)
+	 || !ReadProcessMemory(proc, address + 0x17CC, &unit->maxHP, sizeof(unit->maxHP), nullptr)
+	 || !ReadProcessMemory(proc, address + 0x17D0, &unit->currentMP, sizeof(unit->currentMP), nullptr)
+	 || !ReadProcessMemory(proc, address + 0x17D4, &unit->maxMP, sizeof(unit->maxMP), nullptr)
+	 || !ReadProcessMemory(proc, address + 0x17D8, &unit->currentTP, sizeof(unit->currentTP), nullptr)
 	 || !ReadProcessMemory(proc, address + 0x00A0, &unit->position, sizeof(unit->position), nullptr)
 	) {
 		return false;
@@ -89,12 +85,12 @@ static bool FFXIVUpdateUnitFromPointer(HANDLE proc, BYTE* pointer, FFXIVUnit* un
 
 static bool FFXIVUpdateCombatState(HANDLE proc, BYTE* baseAddr) {
 	DWORD addr;
-	if (!ReadProcessMemory(proc, baseAddr + 0x00f7c250, &addr, sizeof(addr), nullptr)) {
+	if (!ReadProcessMemory(proc, baseAddr + 0x00ee4a28, &addr, sizeof(addr), nullptr)) {
 		return false;
 	}
 
 	DWORD isInCombat;
-	if (!ReadProcessMemory(proc, (BYTE*)addr + 0xc4, &isInCombat, sizeof(isInCombat), nullptr)) {
+	if (!ReadProcessMemory(proc, (BYTE*)addr + 0x630, &isInCombat, sizeof(isInCombat), nullptr)) {
 		return false;
 	}
 	
@@ -132,9 +128,9 @@ static bool FFXIVReadLog(HANDLE proc, BYTE* baseAddr) {
 	DWORD address;
 
 	if (false
-	  || !ReadProcessMemory(proc, baseAddr + 0x00e3b420, &address, 4, nullptr)
+	  || !ReadProcessMemory(proc, baseAddr + 0x00ee4ee0, &address, 4, nullptr)
 	  || !ReadProcessMemory(proc, (BYTE*)address + 0x18, &address, 4, nullptr)
-	  || !ReadProcessMemory(proc, (BYTE*)address + 0x1ec, &logContainer, sizeof(logContainer), nullptr)
+	  || !ReadProcessMemory(proc, (BYTE*)address + 0x1f0, &logContainer, sizeof(logContainer), nullptr)
 	) {
 		return false;
 	}
@@ -275,9 +271,9 @@ static void PollTimerFire(lua_State* L) {
 	}
 
 	if (false
-		|| !FFXIVUpdateUnitFromPointer(gProcess, gBaseAddr + 0x00e3f048, &gTarget) 
-		|| !FFXIVUpdateUnitFromPointer(gProcess, gBaseAddr + 0x00e40080, &gPlayer) 
-		|| !FFXIVUpdateUnitFromPointer(gProcess, gBaseAddr + 0x00e3f080, &gFocus)
+		|| !FFXIVUpdateUnitFromPointer(gProcess, gBaseAddr + 0x00ee8b08, &gTarget) 
+		|| !FFXIVUpdateUnitFromPointer(gProcess, gBaseAddr + 0x00ee9b50, &gPlayer) 
+		|| !FFXIVUpdateUnitFromPointer(gProcess, gBaseAddr + 0x00ee8b50, &gFocus)
 		|| !FFXIVUpdateCombatState(gProcess, gBaseAddr)
 		|| !FFXIVReadLog(gProcess, gBaseAddr)
 	) {
@@ -355,7 +351,7 @@ static int FFXIVPlayerIsInCombat(lua_State* L) {
 static int FFXIVSearchEntities(lua_State* L) {
 	int n = lua_gettop(L);
 
-	gSearch.exists = gSearchTarget.exists = false;
+	gSearch.exists = false;
 	
 	if (n != 1) {
 		return luaL_error(L, "invalid arguments");
@@ -372,8 +368,8 @@ static int FFXIVSearchEntities(lua_State* L) {
 	DWORD entities[256]; // first element is actually the entity count
 
 	if (false
-		|| !ReadProcessMemory(gProcess, gBaseAddr + 0xe4007c, &entityCount, sizeof(entityCount), nullptr)
-		|| !ReadProcessMemory(gProcess, gBaseAddr + 0xe4007c, &entities, std::min<size_t>(sizeof(entities), 4 + entityCount * 4), nullptr)
+		|| !ReadProcessMemory(gProcess, gBaseAddr + 0xee9b4c, &entityCount, sizeof(entityCount), nullptr)
+		|| !ReadProcessMemory(gProcess, gBaseAddr + 0xee9b4c, &entities, std::min<size_t>(sizeof(entities), 4 + entityCount * 4), nullptr)
 		|| entityCount != entities[0]
 	) {
 		lua_pushnumber(L, 0);
@@ -388,20 +384,6 @@ static int FFXIVSearchEntities(lua_State* L) {
 		}
 		if (unit.exists && !strcmp(unit.name, search)) {
 			gSearch = unit;
-			
-			if (gSearch.target) {
-				for (DWORD i = 1; i <= entityCount && i <= sizeof(entities) / sizeof(*entities); ++i) {
-					FFXIVUnit unit;
-					if (!FFXIVUpdateUnit(gProcess, (BYTE*)entities[i], &unit)) {
-						lua_pushnumber(L, 0);
-						return 1;
-					}
-					if (unit.exists && unit.id == gSearch.target) {
-						gSearchTarget = unit;
-						break;
-					}
-				}
-			}
 	
 			lua_pushnumber(L, 1);
 			return 1;
