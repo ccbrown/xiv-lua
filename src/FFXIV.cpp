@@ -44,11 +44,11 @@ static bool FFXIVUpdateUnit(HANDLE proc, BYTE* address, FFXIVUnit* unit) {
 	if (false
 	 || !ReadProcessMemory(proc, address + 0x0030, &unit->name, sizeof(unit->name), nullptr)
 	 || !ReadProcessMemory(proc, address + 0x0074, &unit->id, sizeof(unit->id), nullptr)
-	 || !ReadProcessMemory(proc, address + 0x17C8, &unit->currentHP, sizeof(unit->currentHP), nullptr)
-	 || !ReadProcessMemory(proc, address + 0x17CC, &unit->maxHP, sizeof(unit->maxHP), nullptr)
-	 || !ReadProcessMemory(proc, address + 0x17D0, &unit->currentMP, sizeof(unit->currentMP), nullptr)
-	 || !ReadProcessMemory(proc, address + 0x17D4, &unit->maxMP, sizeof(unit->maxMP), nullptr)
-	 || !ReadProcessMemory(proc, address + 0x17D8, &unit->currentTP, sizeof(unit->currentTP), nullptr)
+	 || !ReadProcessMemory(proc, address + 0x17E8, &unit->currentHP, sizeof(unit->currentHP), nullptr)
+	 || !ReadProcessMemory(proc, address + 0x17EC, &unit->maxHP, sizeof(unit->maxHP), nullptr)
+	 || !ReadProcessMemory(proc, address + 0x17F0, &unit->currentMP, sizeof(unit->currentMP), nullptr)
+	 || !ReadProcessMemory(proc, address + 0x17F4, &unit->maxMP, sizeof(unit->maxMP), nullptr)
+	 || !ReadProcessMemory(proc, address + 0x17F8, &unit->currentTP, sizeof(unit->currentTP), nullptr)
 	 || !ReadProcessMemory(proc, address + 0x00A0, &unit->position, sizeof(unit->position), nullptr)
 	) {
 		return false;
@@ -84,16 +84,11 @@ static bool FFXIVUpdateUnitFromPointer(HANDLE proc, BYTE* pointer, FFXIVUnit* un
 }
 
 static bool FFXIVUpdateCombatState(HANDLE proc, BYTE* baseAddr) {
-	DWORD addr;
-	if (!ReadProcessMemory(proc, baseAddr + 0x00ee4a28, &addr, sizeof(addr), nullptr)) {
+	DWORD isInCombat;
+	if (!ReadProcessMemory(proc, (BYTE*)baseAddr + 0x10449BC, &isInCombat, sizeof(isInCombat), nullptr)) {
 		return false;
 	}
 
-	DWORD isInCombat;
-	if (!ReadProcessMemory(proc, (BYTE*)addr + 0x630, &isInCombat, sizeof(isInCombat), nullptr)) {
-		return false;
-	}
-	
 	if (gIsInCombat && !isInCombat) {
 		gIsInCombat = isInCombat;
 		PlatformEvent(gLuaState, "LEFT_COMBAT");
@@ -128,7 +123,7 @@ static bool FFXIVReadLog(HANDLE proc, BYTE* baseAddr) {
 	DWORD address;
 
 	if (false
-	  || !ReadProcessMemory(proc, baseAddr + 0x00ee4ee0, &address, 4, nullptr)
+	  || !ReadProcessMemory(proc, baseAddr + 0x00f16d70, &address, 4, nullptr)
 	  || !ReadProcessMemory(proc, (BYTE*)address + 0x18, &address, 4, nullptr)
 	  || !ReadProcessMemory(proc, (BYTE*)address + 0x1f0, &logContainer, sizeof(logContainer), nullptr)
 	) {
@@ -271,9 +266,9 @@ static void PollTimerFire(lua_State* L) {
 	}
 
 	if (false
-		|| !FFXIVUpdateUnitFromPointer(gProcess, gBaseAddr + 0x00ee8b08, &gTarget) 
-		|| !FFXIVUpdateUnitFromPointer(gProcess, gBaseAddr + 0x00ee9b50, &gPlayer) 
-		|| !FFXIVUpdateUnitFromPointer(gProcess, gBaseAddr + 0x00ee8b50, &gFocus)
+		|| !FFXIVUpdateUnitFromPointer(gProcess, gBaseAddr + 0x00F1A998, &gTarget) 
+		|| !FFXIVUpdateUnitFromPointer(gProcess, gBaseAddr + 0x00F1AA10, &gPlayer) 
+		|| !FFXIVUpdateUnitFromPointer(gProcess, gBaseAddr + 0x00F1A9E0, &gFocus)
 		|| !FFXIVUpdateCombatState(gProcess, gBaseAddr)
 		|| !FFXIVReadLog(gProcess, gBaseAddr)
 	) {
@@ -359,10 +354,11 @@ static int FFXIVSearchEntities(lua_State* L) {
 	
 	auto search = luaL_checkstring(L, 1);
 
-	if (!gProcess || !gBaseAddr) {
+// TODO: update this for the latest patch
+//	if (!gProcess || !gBaseAddr) {
 		lua_pushnumber(L, 0);
 		return 1;
-	}
+//	}
 	
 	DWORD entityCount = 0;
 	DWORD entities[256]; // first element is actually the entity count
