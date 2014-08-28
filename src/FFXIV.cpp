@@ -85,7 +85,7 @@ static bool FFXIVUpdateUnitFromPointer(HANDLE proc, BYTE* pointer, FFXIVUnit* un
 
 static bool FFXIVUpdateCombatState(HANDLE proc, BYTE* baseAddr) {
 	DWORD isInCombat;
-	if (!ReadProcessMemory(proc, (BYTE*)baseAddr + 0x10449BC, &isInCombat, sizeof(isInCombat), nullptr)) {
+	if (!ReadProcessMemory(proc, (BYTE*)baseAddr + 0x104EBB8, &isInCombat, sizeof(isInCombat), nullptr)) {
 		return false;
 	}
 
@@ -123,13 +123,13 @@ static bool FFXIVReadLog(HANDLE proc, BYTE* baseAddr) {
 	DWORD address;
 
 	if (false
-	  || !ReadProcessMemory(proc, baseAddr + 0x00f16d70, &address, 4, nullptr)
+	  || !ReadProcessMemory(proc, baseAddr + 0x00f20f70, &address, 4, nullptr)
 	  || !ReadProcessMemory(proc, (BYTE*)address + 0x18, &address, 4, nullptr)
 	  || !ReadProcessMemory(proc, (BYTE*)address + 0x1f0, &logContainer, sizeof(logContainer), nullptr)
 	) {
 		return false;
 	}
-	
+
 	if (discardRead) {
 		discardRead = false;
 		return true;
@@ -266,9 +266,9 @@ static void PollTimerFire(lua_State* L) {
 	}
 
 	if (false
-		|| !FFXIVUpdateUnitFromPointer(gProcess, gBaseAddr + 0x00F1A998, &gTarget) 
-		|| !FFXIVUpdateUnitFromPointer(gProcess, gBaseAddr + 0x00F1AA10, &gPlayer) 
-		|| !FFXIVUpdateUnitFromPointer(gProcess, gBaseAddr + 0x00F1A9E0, &gFocus)
+		|| !FFXIVUpdateUnitFromPointer(gProcess, gBaseAddr + 0x00F24B98, &gTarget) 
+		|| !FFXIVUpdateUnitFromPointer(gProcess, gBaseAddr + 0x00F24C10, &gPlayer) 
+		|| !FFXIVUpdateUnitFromPointer(gProcess, gBaseAddr + 0x00F24BE0, &gFocus)
 		|| !FFXIVUpdateCombatState(gProcess, gBaseAddr)
 		|| !FFXIVReadLog(gProcess, gBaseAddr)
 	) {
